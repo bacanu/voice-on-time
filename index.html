@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice on Time</title>
+    <link href="/tailwind.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="app" class="p-5 max-w-screen-md m-auto">
+        <div class="container mb-2">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 px-3 rounded" @click="doTheThing">Do
+                the thing</button> <span class="text-sm text-gray-800 float-right p-1">Your edits are auto-saved.</span>
+        </div>
+        <div class="items container">
+            <div v-for="item in items" :key="item.id" class="flex flex-row p-2 mb-2 shadow hover:shadow-md rounded">
+                <template v-if="item.type == 'voice'">
+                    <span class="flex-none pl-3 p-1"> Say </span> 
+                    <input v-model="item.value" type="text"
+                            class="bg-green-200 flex-1 p-1 rounded mr-1">
+                    <button @click="removeItem(item.id)"
+                        class="flex-none bg-red-500 hover:bg-red-700 text-white font-bold p-1 px-3 rounded">x</button>
+                </template>
+                <template v-if="item.type == 'time'">
+                    <span class="flex-1 px-3">Wait for <input v-model="item.value" type="number"
+                            class="bg-green-200 p-1 text-center w-20 rounded" > seconds
+                        {{ (item.elapsed > 0) ? "(" + (item.value - item.elapsed) + "s left)" : ""  }}</span>
+                    <button @click="removeItem(item.id)"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold p-1 px-3 rounded">x</button>
+                </template>
+                <template v-if="item.type == 'shortbeep'">
+                    <span class="flex-1 px-3">Short beep</span>
+                    <button @click="removeItem(item.id)"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold p-1 px-3 rounded">x</button>
+                </template>
+                <template v-if="item.type == 'longbeep'">
+                    <span class="flex-1 px-3">Long beep</span>
+                    <button @click="removeItem(item.id)"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold p-1 px-3 rounded">x</button>
+                </template>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 px-3 rounded" @click="addVoice">Add
+                voice</button>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 px-3 rounded" @click="addTime">Add
+                time</button>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 px-3 rounded"
+                @click="addShortBeep">Add short beep</button>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 px-3 rounded"
+                @click="addLongBeep">Add long beep</button>
+            <button class="bg-red-500 hover:bg-red-700 text-white font-bold p-1 px-3 rounded ml-5" @click="clearAll">Clear
+                all</button>
+        </div>
+        <div class="links my-10">
+            <a class="p-1 text-sm text-blue-700 hover:text-red-700" href="#" @click.prevent="reloadCchw">Reload the initial workout (overwrites your changes)</a>
+            <a class="p-1 text-sm text-blue-700" href="https://www.reddit.com/r/bodyweightfitness/comments/fjyhyo/coronavirus_curfew_home_workout_12_min_session_no/">Source of the workout on reddit</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"
+        integrity="sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        var voice = null
+        window.speechSynthesis.onvoiceschanged = () => {
+            voice = window.speechSynthesis.getVoices().find((v) => v.name == "Google UK English Female");
+        }
+
+        function saveLocally(data) {
+            localStorage.setItem("items", JSON.stringify(data));
+        }
+
+        var cchw = [{"id":"1","type":"voice","value":"Push Ups --- 1 minute then 1 minute rest. Start at the beep."},{"id":"2","type":"time","value":"5","elapsed":0},{"id":"3","type":"shortbeep"},{"id":"4","type":"time","value":"60","elapsed":0},{"id":"5","type":"voice","value":"Rest for 1 minute"},{"id":"6","type":"time","value":"50","elapsed":0},{"id":"7","type":"voice","value":"Get ready for \"Double leg squat jumps\" in 10 seconds. Wait for the beep."},{"id":"8","type":"time","value":"10","elapsed":0},{"id":"9","type":"shortbeep"},{"id":"10","type":"time","value":"60","elapsed":0},{"id":"11","type":"voice","value":"Rest for 1 minute"},{"id":"13","type":"voice","value":"Get ready for \"Push-through crunches\" in 10 seconds. Wait for the beep."},{"id":"14","type":"time","value":"10","elapsed":0},{"id":"15","type":"shortbeep"},{"id":"16","type":"time","value":"60","elapsed":0},{"id":"17","type":"voice","value":"Rest for 1 minute"},{"id":"18","type":"time","value":"50","elapsed":0},{"id":"19","type":"voice","value":"Get ready to \"Plank\" in 10 seconds. Wait for the beep."},{"id":"20","type":"time","value":"10","elapsed":0},{"id":"21","type":"shortbeep"},{"id":"22","type":"time","value":"60","elapsed":0},{"id":"23","type":"voice","value":"Rest for 1 minute. "},{"id":"24","type":"time","value":"50","elapsed":0},{"id":"25","type":"voice","value":"Get ready for \"Bicycle Crunches\" in 10 seconds. Wait for the beep."},{"id":"26","type":"time","value":"10","elapsed":0},{"id":"27","type":"shortbeep"},{"id":"28","type":"time","value":"60","elapsed":0},{"id":"29","type":"voice","value":"Rest for 1 minute. "},{"id":"30","type":"time","value":"50","elapsed":0},{"id":"31","type":"voice","value":"Almost done. Get ready for another round of \"Push ups\". Wait for the beep."},{"id":"32","type":"time","value":"10","elapsed":0},{"id":"33","type":"shortbeep"},{"id":"34","type":"time","value":"60","elapsed":0},{"id":"35","type":"shortbeep"},{"id":"36","type":"shortbeep"},{"id":"37","type":"shortbeep"},{"id":"38","type":"voice","value":"We are beeping done. Congratulations, you can go back to reddit now."}];
+
+        function getFromLocal() {
+            var s = localStorage.getItem("items")
+            
+            if (s) {
+                return JSON.parse(s);
+            } else {
+                return cchw;
+            }
+        }
+        var app = new Vue({
+            el: "#app",
+            data: {
+                items: []
+            },
+            methods: {
+                addVoice() {
+                    this.items.push({ id: Date.now() + " " + _.uniqueId(), type: "voice", value: "" })
+                },
+                addTime() {
+                    this.items.push({ id: Date.now() + " " + _.uniqueId(), type: "time", value: 0, elapsed: 0 })
+                },
+                addShortBeep() {
+                    this.items.push({ id: Date.now() + " " + _.uniqueId(), type: "shortbeep" })
+                },
+                addLongBeep() {
+                    this.items.push({ id: Date.now() + " " + _.uniqueId(), type: "longbeep" })
+                },
+                removeItem(itemId) {
+                    this.items = this.items.filter((item) => { return item.id != itemId })
+                },
+                clearAll() {
+                    this.items = [];
+                },
+                reloadCchw() {
+                    this.items = JSON.parse(JSON.stringify(cchw))
+                },
+                doTheThing() {
+                    function chain(promise, remaining) {
+                        if (remaining.length == 0) {
+                            promise(() => { console.log("done") });
+                            return;
+                        }
+
+                        var p = _.head(remaining)
+                        var remaining = _.tail(remaining)
+
+                        promise(() => { chain(p, remaining) })
+                    }
+
+                    var promises = this.items.map((item) => {
+                        return function (cb) {
+                            if (item.type == "voice") {
+                                return new Promise((resolve, reject) => {
+                                    var msg = new SpeechSynthesisUtterance(item.value);
+                                    msg.voice = voice;
+                                    msg.rate = 0.5; // 0.1 to 10
+                                    msg.pitch = 1; //0 to 2
+                                    msg.onend = (() => { resolve() })
+                                    msg.onerror = (() => { reject() })
+                                    window.speechSynthesis.speak(msg);
+                                }).then(cb)
+                            }
+                            if (item.type == "time") {
+                                return new Promise((resolve, reject) => {
+                                    item.elapsed = 0;
+                                    var t = setInterval(() => {
+                                        item.elapsed += 1
+                                    }, 1000)
+
+                                    window.setTimeout(() => {
+                                        resolve()
+                                        item.elapsed = 0;
+                                        clearInterval(t);
+                                    }, item.value * 1000)
+                                }).then(cb)
+                            }
+                            if (item.type == "shortbeep") {
+                                return new Promise((resolve, reject) => {
+                                    var msg = new SpeechSynthesisUtterance("beep");
+                                    msg.voice = voice
+                                    msg.volume = 1; // 0 to 1
+                                    msg.rate = 1; // 0.1 to 10
+                                    msg.pitch = 1; //0 to 2
+                                    msg.onend = (() => { resolve() })
+                                    msg.onerror = (() => { reject() })
+                                    window.speechSynthesis.speak(msg);
+                                }).then(cb)
+                            }
+                            if (item.type == "longbeep") {
+                                return new Promise((resolve, reject) => {
+                                    var msg = new SpeechSynthesisUtterance("beep");
+                                    msg.voice = voice
+                                    msg.volume = 1; // 0 to 1
+                                    msg.rate = 0.1; // 0.1 to 10
+                                    msg.pitch = 1; //0 to 2
+                                    msg.onend = (() => { resolve() })
+                                    msg.onerror = (() => { reject() })
+                                    window.speechSynthesis.speak(msg);
+                                }).then(cb)
+                            }
+                        }
+                    })
+
+                    var initial = _.head(promises)
+                    var remaining = _.tail(promises)
+
+                    chain(initial, remaining);
+                }
+            },
+            created() {
+                this.items = getFromLocal()
+            },
+            updated() {
+                saveLocally(this.items);
+            }
+        });
+    </script>
+</body>
+
+</html>
