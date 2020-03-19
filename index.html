@@ -73,12 +73,26 @@
                     the thing</button> <span class="text-sm text-gray-800 float-right p-1">Your edits are
                     auto-saved.</span>
             </div>
-            <div class="container flex flex-row">
-                <textarea v-model="script" class="flex-1 pl-3 p-1 rounded bg-green-100 shadow"></textarea>
+            <div class="container flex flex-row relative">
+                <div class="whitespace-pre flex-1 px-3 p-1">{{ script + "a" }}</div>
+                <textarea v-model="script" class="w-full h-full absolute top-0 left-0 px-3 p-1 rounded bg-green-100 shadow"></textarea>
+            </div>
+            <div class="my-3">
+                <strong>How to use:</strong><br>
+                Each line is a command. <br>
+                Each line is executed in order. <br>
+                Start a line with <strong>Say</strong> and the british robot lady will read it. <br>
+                Start a line with <strong>Wait</strong> and a timer for x seconds will be shown. <br>
+                Start a line with <strong>Beep</strong> and a short beep is played. <br>
+                Start a line with <strong>Beeep</strong> and a longer beep is played. <br>
+                The "script" you write is auto-saved locally, on your browser. <br>
+
+
+
             </div>
 
             <div class="links my-10">
-                <a class="p-1 text-sm text-blue-700 hover:text-red-700" href="#" @click.prevent="reloadCchw">Reload the
+                <a class="py-1 text-sm text-blue-700 hover:text-red-700" href="#" @click.prevent="reloadCchw">Reload the
                     initial workout (overwrites your changes)</a>
                 <a class="p-1 text-sm text-blue-700"
                     href="https://www.reddit.com/r/bodyweightfitness/comments/fjyhyo/coronavirus_curfew_home_workout_12_min_session_no/">Source
@@ -128,7 +142,49 @@
             localStorage.setItem("text", text);
         }
 
-        var cchw = [{ "id": "1", "type": "voice", "value": "Push Ups --- 1 minute then 1 minute rest. Start at the beep." }, { "id": "2", "type": "time", "value": "5", "elapsed": 0 }, { "id": "3", "type": "shortbeep" }, { "id": "4", "type": "time", "value": "60", "elapsed": 0 }, { "id": "5", "type": "voice", "value": "Rest for 1 minute" }, { "id": "6", "type": "time", "value": "50", "elapsed": 0 }, { "id": "7", "type": "voice", "value": "Get ready for \"Double leg squat jumps\" in 10 seconds. Wait for the beep." }, { "id": "8", "type": "time", "value": "10", "elapsed": 0 }, { "id": "9", "type": "shortbeep" }, { "id": "10", "type": "time", "value": "60", "elapsed": 0 }, { "id": "11", "type": "voice", "value": "Rest for 1 minute" }, { "id": "13", "type": "voice", "value": "Get ready for \"Push-through crunches\" in 10 seconds. Wait for the beep." }, { "id": "14", "type": "time", "value": "10", "elapsed": 0 }, { "id": "15", "type": "shortbeep" }, { "id": "16", "type": "time", "value": "60", "elapsed": 0 }, { "id": "17", "type": "voice", "value": "Rest for 1 minute" }, { "id": "18", "type": "time", "value": "50", "elapsed": 0 }, { "id": "19", "type": "voice", "value": "Get ready to \"Plank\" in 10 seconds. Wait for the beep." }, { "id": "20", "type": "time", "value": "10", "elapsed": 0 }, { "id": "21", "type": "shortbeep" }, { "id": "22", "type": "time", "value": "60", "elapsed": 0 }, { "id": "23", "type": "voice", "value": "Rest for 1 minute. " }, { "id": "24", "type": "time", "value": "50", "elapsed": 0 }, { "id": "25", "type": "voice", "value": "Get ready for \"Bicycle Crunches\" in 10 seconds. Wait for the beep." }, { "id": "26", "type": "time", "value": "10", "elapsed": 0 }, { "id": "27", "type": "shortbeep" }, { "id": "28", "type": "time", "value": "60", "elapsed": 0 }, { "id": "29", "type": "voice", "value": "Rest for 1 minute. " }, { "id": "30", "type": "time", "value": "50", "elapsed": 0 }, { "id": "31", "type": "voice", "value": "Almost done. Get ready for another round of \"Push ups\". Wait for the beep." }, { "id": "32", "type": "time", "value": "10", "elapsed": 0 }, { "id": "33", "type": "shortbeep" }, { "id": "34", "type": "time", "value": "60", "elapsed": 0 }, { "id": "35", "type": "shortbeep" }, { "id": "36", "type": "shortbeep" }, { "id": "37", "type": "shortbeep" }, { "id": "38", "type": "voice", "value": "We are beeping done. Congratulations, you can go back to reddit now." }];
+        var cchw = `Say Push Ups --- 1 minute then 1 minute rest. Start at the beep.
+Wait 5 seconds
+Beep
+Wait 60 seconds
+Say Rest for 1 minute
+
+Wait 50 seconds
+Say Get ready for "Double leg squat jumps" in 10 seconds. Wait for the beep.
+Wait 10 seconds
+Beep
+Wait 60 seconds
+Say Rest for 1 minute
+
+Wait 50 seconds
+Say Get ready for "Push-through crunches" in 10 seconds. Wait for the beep.
+Wait 10 seconds
+Beep
+Wait 60 seconds
+Say Rest for 1 minute
+
+Wait 50 seconds
+Say Get ready to "Plank" in 10 seconds. Wait for the beep.
+Wait 10 seconds
+Beep
+Wait 60 seconds
+Say Rest for 1 minute
+
+Wait 50 seconds
+Say Get ready for "Bicycle Crunches" in 10 seconds. Wait for the beep.
+Wait 10 seconds
+Beep
+Wait 60 seconds
+Say Rest for 1 minute
+
+Wait 50 seconds
+Say Almost done. Get ready for another round of "Push ups". Wait for the beep.
+Wait 10 seconds
+Beep
+Wait 60 seconds
+Beep
+Beep
+Beep
+Say We are beeping done. Congratulations, you can go back to reddit now.`
 
         function getFromLocal() {
             var s = localStorage.getItem("text")
@@ -188,6 +244,9 @@
                 }
             },
             methods: {
+                reloadCchw() {
+                    this.script = cchw;
+                },
                 doTheThing() {
                     var that = this;
                     var items = scriptToItems(this.script);
