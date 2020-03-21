@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voice on Time</title>
-    <link href="tailwind.min.css" rel="stylesheet" />
+    <link href="https://cdn.tailwindcdn.com/1.1.4/tailwind.min.css" rel="stylesheet" />
     <style>
         .progress::after {
             content: " ";
@@ -66,18 +66,23 @@
 
 <body>
     <div id="app" class="">
-        <div v-if="!countdown" class="p-5 max-w-screen-md m-auto">
+        <div v-show="!countdown" class="p-5 max-w-screen-md m-auto">
             <div class="container mb-2">
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 px-3 rounded"
                     @click="doTheThing">Do
-                    the thing</button> <span class="text-sm text-gray-800 float-right p-1">Your edits are
-                    auto-saved.</span>
+                    the thing</button>
+                <div class="text-sm text-gray-800 float-right">
+                    <a href="https://github.com/bacanu/voice-on-time" class="p-1 text-blue-700 hover:text-blue-900">Source on Github</a>
+                    <a href="#howto" class="p-1 text-blue-700 hover:text-blue-900">How to use</a>
+                    <span class="p-1">Your edits are auto-saved.</span>
+                </div>
             </div>
             <div class="container flex flex-row relative">
                 <div class="whitespace-pre flex-1 px-3 p-1">{{ script + "a" }}</div>
-                <textarea v-model="script" class="w-full h-full absolute top-0 left-0 px-3 p-1 rounded bg-green-100 shadow"></textarea>
+                <textarea v-model="script"
+                    class="w-full h-full absolute top-0 left-0 px-3 p-1 rounded bg-green-100 shadow"></textarea>
             </div>
-            <div class="my-3">
+            <div class="my-3" id="howto">
                 <strong>How to use:</strong><br>
                 Each line is a command. <br>
                 Each line is executed in order. <br>
@@ -86,8 +91,11 @@
                 Start a line with <strong>Beep</strong> and a short beep is played. <br>
                 Start a line with <strong>Beeep</strong> and a longer beep is played. <br>
                 The "script" you write is auto-saved locally, on your browser. <br>
+                Start the "script" by hitting the "Do the thing" button. <br>
                 Reload the page to reset the countdown once started. <br>
-                For bugs, feature requests and feedback, create a new issue at: <a class="text-blue-700 hover:text-blue-900" href="https://github.com/bacanu/voice-on-time/issues">https://github.com/bacanu/voice-on-time/issues</a>
+                For bugs, feature requests and feedback, create a new issue at: <a
+                    class="text-blue-700 hover:text-blue-900"
+                    href="https://github.com/bacanu/voice-on-time/issues">https://github.com/bacanu/voice-on-time/issues</a>
 
             </div>
 
@@ -99,7 +107,7 @@
                     of the workout on reddit</a>
             </div>
         </div>
-        <div v-if="countdown" class="progress" v-bind:class="{
+        <div v-show="countdown" class="progress" v-bind:class="{
             'progress-0': (computedElapsed == 0 ),
             'progress-1': (computedElapsed == 1 ),
             'progress-2': (computedElapsed == 2 ),
@@ -112,7 +120,8 @@
             'progress-9': (computedElapsed == 9 ),
             'progress-10': (computedElapsed == 10 )
         }">
-            <div class="container max-w-screen-md m-auto text-3xl text-center p-6">
+
+            <div v-if="countdown" class="container max-w-screen-md m-auto text-3xl text-center p-6">
                 <div v-if="countdown.type == 'voice'">
                     {{ countdown.value }}
                 </div>
@@ -125,13 +134,15 @@
                 <div v-if="countdown.type == 'longbeep'">
                     BEEEP
                 </div>
-
             </div>
+            <video loop="loop" id="video" class="m-auto" style="opacity: 0;">
+                <source src="video.mp4" type="video/mp4">
+            </video>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"
         integrity="sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
     <script>
         var voice = null
         window.speechSynthesis.onvoiceschanged = () => {
@@ -192,7 +203,7 @@ Say We are beeping done. Congratulations, you can go back to reddit now.`
             if (s) {
                 return s;
             } else {
-                return "";
+                return cchw;
             }
         }
 
@@ -248,6 +259,8 @@ Say We are beeping done. Congratulations, you can go back to reddit now.`
                     this.script = cchw;
                 },
                 doTheThing() {
+                    var video = document.querySelector("#video");
+
                     var that = this;
                     var items = scriptToItems(this.script);
 
@@ -255,6 +268,7 @@ Say We are beeping done. Congratulations, you can go back to reddit now.`
                         if (remaining.length == 0) {
                             promise(() => {
                                 that.countdown = null;
+                                video.pause()
                             });
                             return;
                         }
@@ -268,6 +282,9 @@ Say We are beeping done. Congratulations, you can go back to reddit now.`
                     var promises = items.map((item) => {
                         return function (cb) {
                             that.countdown = item;
+                            if (video) {
+                                video.play();
+                            }
 
                             if (item.type == "voice") {
                                 return new Promise((resolve, reject) => {
