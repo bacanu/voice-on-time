@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voice on Time</title>
-    <link href="https://cdn.tailwindcdn.com/1.1.4/tailwind.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet" />
     <style>
         .progress::after {
             content: " ";
@@ -78,7 +78,7 @@
                 </div>
             </div>
             <div class="container flex flex-row relative">
-                <div class="whitespace-pre flex-1 px-3 p-1">{{ script + "a" }}</div>
+                <div class="whitespace-pre-line flex-1 px-3 p-1">{{ script + "a" }}</div>
                 <textarea v-model="script"
                     class="w-full h-full absolute top-0 left-0 px-3 p-1 rounded bg-green-100 shadow"></textarea>
             </div>
